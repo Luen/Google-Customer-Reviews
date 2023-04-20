@@ -73,9 +73,9 @@
 
     service.getDetails({ placeId }, (place, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK && place.reviews) {
-        const fiveStarReviews = place.reviews.filter((review) => review.rating === 5 || review.rating === 4);
+        const reviews = place.reviews.filter((review) => review.rating === 5 || review.rating === 4);
 
-        fiveStarReviews.forEach((review) => {
+        reviews.forEach((review) => {
           const reviewDiv = document.createElement("div");
           reviewDiv.classList.add("review");
 
@@ -144,7 +144,6 @@
 
       return starContainer;
     }
-
 
     // Helper function to calculate time since the review was posted
     function timeSince(date) {
