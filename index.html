@@ -1,0 +1,166 @@
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"
+  crossorigin="anonymous">
+
+<style>
+  .reviews-container {
+    width: 300px;
+    margin: 0 auto;
+  }
+
+  .review {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .stars {
+    font-size: 20px;
+    color: #f1c40f;
+    margin-bottom: 10px;
+  }
+
+  .fa-star-o {
+    color: #ccc;
+  }
+
+  .comment {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .author {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .time-ago {
+    font-size: 14px;
+    color: #777;
+  }
+
+  .siema-prev,
+  .siema-next {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    position: absolute;
+    transform: translateY(-500%);
+  }
+
+  .siema-prev {
+    left: 0;
+  }
+
+  .siema-next {
+    right: 0;
+  }
+</style>
+
+<script src="https://unpkg.com/siema@1.5.1/dist/siema.min.js"></script>
+
+<!-- Google Maps JavaScript API with Places Library -->
+<script type="text/javascript"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBK52_UDE8tZ10HbmLy200fQasVREeEXIc&libraries=places&callback=initMap"
+  async defer></script>
+
+<script>
+  function initMap() {
+    const map = new google.maps.Map(document.createElement("div"));
+    const service = new google.maps.places.PlacesService(map);
+    const placeId = "ChIJ7Tvw5Xr31WsRuWIZ4Tm8T1k"; // Replace with the Place ID for 4WD Central Townsville
+    const reviewsContainer = document.getElementById("reviews-container");
+
+    service.getDetails({ placeId }, (place, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && place.reviews) {
+        const fiveStarReviews = place.reviews.filter((review) => review.rating === 5);
+
+        fiveStarReviews.forEach((review) => {
+          const reviewDiv = document.createElement("div");
+          reviewDiv.classList.add("review");
+
+          const stars = createStars(review.rating);
+          reviewDiv.appendChild(stars);
+
+          const comment = document.createElement("p");
+          comment.textContent = review.text;
+          comment.classList.add("comment");
+          reviewDiv.appendChild(comment);
+
+          const author = document.createElement("p");
+          author.textContent = review.author_name;
+          author.classList.add("author");
+          reviewDiv.appendChild(author);
+
+          const timeAgo = document.createElement("p");
+          timeAgo.textContent = timeSince(new Date(review.time * 1000)) + " ago";
+          timeAgo.classList.add("time-ago");
+          reviewDiv.appendChild(timeAgo);
+
+          reviewsContainer.appendChild(reviewDiv);
+        });
+
+        // Initialize Siema carousel
+        const siema = new Siema({
+          selector: reviewsContainer,
+          duration: 200,
+          easing: 'ease-out',
+          perPage: 1,
+          startIndex: 0,
+          draggable: true,
+          multipleDrag: true,
+          threshold: 20,
+          loop: true,
+        });
+
+        // Add navigation arrows
+        const prevArrow = document.createElement("button");
+        prevArrow.classList.add("siema-prev");
+        prevArrow.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevArrow.addEventListener("click", () => siema.prev());
+        reviewsContainer.parentElement.appendChild(prevArrow);
+
+        const nextArrow = document.createElement("button");
+        nextArrow.classList.add("siema-next");
+        nextArrow.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextArrow.addEventListener("click", () => siema.next());
+        reviewsContainer.parentElement.appendChild(nextArrow);
+
+        // Autoplay the carousel
+        setInterval(() => siema.next(), 3000);
+
+      }
+    });
+
+    function createStars(rating) {
+      const starContainer = document.createElement("div");
+      starContainer.classList.add("stars");
+
+      for (let i = 0; i < 5; i++) {
+        const star = document.createElement("i");
+        star.classList.add("fas", i < rating ? "fa-star" : "fa-star-o");
+        starContainer.appendChild(star);
+      }
+
+      return starContainer;
+    }
+
+
+    // Helper function to calculate time since the review was posted
+    function timeSince(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      let interval = Math.floor(seconds / 31536000);
+      if (interval > 1) return interval + " years";
+      interval = Math.floor(seconds / 2592000);
+      if (interval > 1) return interval + " months";
+      interval = Math.floor(seconds / 86400);
+      if (interval > 1) return interval + " days";
+      interval = Math.floor(seconds / 3600);
+      if (interval > 1) return interval + " hours";
+      interval = Math.floor(seconds / 60);
+      if (interval > 1) return interval + " minutes";
+      return Math.floor(seconds) + " seconds";
+    }
+  }
+</script>
+<div id="reviews-container"></div>
